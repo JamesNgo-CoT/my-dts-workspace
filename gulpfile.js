@@ -139,6 +139,8 @@ gulp.task('goodmorning', ['goodmorning_gitpull', 'goodmorning_install'], () => {
   console.log('        \\/                   \\/          \\/                  \\/        \\//_____/ \\/');
 });
 
+////////////////////////////////////////////////////////////////////////////////
+
 gulp.task('goodnight_gitpush', () => {
   return gulp.src('.')
     .pipe(through.obj((chunk, enc, cb) => {
