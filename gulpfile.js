@@ -4,12 +4,16 @@ const autoPrefixer = require('gulp-autoprefixer'),
   babel = require('gulp-babel'),
   cssNano = require('gulp-cssnano'),
   del = require('del'),
+  dependencies = require('gulp-web-dependencies'),
   esLint = require('gulp-eslint'),
+  git = require('gulp-git'),
   gulp = require('gulp'),
+  install = require('gulp-install'),
   mustache = require('gulp-mustache'),
   rename = require('gulp-rename'),
   sass = require('gulp-sass'),
   sourceMaps = require('gulp-sourcemaps'),
+  through = require('through2'),
   uglify = require('gulp-uglify'),
   webServer = require('gulp-webserver');
 
@@ -70,41 +74,21 @@ gulp.task('cleanBuildSCSS', ['cleanup'], () => buildSCSS());
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const docGlob = ['./src/**/*.html'];
+const htmlGlob = ['./src/**/*.html'];
 
-const buildDoc = () => gulp.src(docGlob)
+const buildHtml = () => gulp.src(htmlGlob)
   .pipe(mustache())
+  .pipe(dependencies({
+    dest: './dist/',
+    prefix: '/vendor',
+  }))
   .pipe(gulp.dest('./dist/'));
 
-gulp.task('cleanBuildDoc', ['cleanup'], () => buildDoc());
+gulp.task('cleanBuildHtml', ['cleanup'], () => buildHtml());
 
 ////////////////////////////////////////////////////////////////////////////////
 
-gulp.task('copyBabelPolyfill', ['cleanup'], () => gulp
-  .src('./node_modules/babel-polyfill/dist/polyfill.min.js')
-  .pipe(gulp.dest('./dist/vendor/babel-polyfill/')));
-
-gulp.task('copyBackbone', ['cleanup'], () => gulp
-  .src('./node_modules/backbone/backbone-min.{js,map}')
-  .pipe(gulp.dest('./dist/vendor/backbone/')));
-
-gulp.task('copyBootstrap', ['cleanup'], () => gulp
-  .src('./node_modules/bootstrap/dist/{css,js}/bootstrap.min.{css,js}*')
-  .pipe(gulp.dest('./dist/vendor/bootstrap/')));
-
-gulp.task('copyJQuery', ['cleanup'], () => gulp
-  .src('./node_modules/jquery/dist/jquery.min.{js,map}')
-  .pipe(gulp.dest('./dist/vendor/jquery/')));
-
-gulp.task('copyUnderscore', ['cleanup'], () => gulp
-  .src('./node_modules/underscore/underscore-min.{js,map}')
-  .pipe(gulp.dest('./dist/vendor/underscore/')));
-
-gulp.task('copyDependencies', ['cleanup', 'copyBabelPolyfill', 'copyBackbone', 'copyBootstrap', 'copyJQuery', 'copyUnderscore']);
-
-////////////////////////////////////////////////////////////////////////////////
-
-gulp.task('default', ['cleanup', 'cleanBuildJS', 'cleanBuildCSS', 'cleanBuildSCSS', 'cleanBuildDoc', 'copyDependencies']);
+gulp.task('default', ['cleanup', 'cleanBuildJS', 'cleanBuildCSS', 'cleanBuildSCSS', 'cleanBuildHtml']);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -123,5 +107,56 @@ gulp.task('serve', ['default'], () => {
   gulp.watch(jsGlob, () => buildJS());
   gulp.watch(cssGlob, () => buildCSS());
   gulp.watch(scssGlob, () => buildSCSS());
-  gulp.watch(docGlob, () => buildDoc());
+  gulp.watch(htmlGlob, () => buildHtml());
+});
+
+////////////////////////////////////////////////////////////////////////////////
+
+gulp.task('goodmorning_gitpull', () => {
+  return gulp.src('.')
+    .pipe(through.obj((chunk, enc, cb) => {
+      git.revParse({
+        args: '--abbrev-ref HEAD'
+      }, (err, branch) => {
+        git.pull('origin', branch, () => {
+          cb(null, chunk);
+        });
+      });
+    }));
+});
+
+gulp.task('goodmorning_install', ['goodmorning_gitpull'], () => {
+  return gulp.src(['./package.json'])
+    .pipe(install());
+});
+
+gulp.task('goodmorning', ['goodmorning_gitpull', 'goodmorning_install'], () => {
+  console.log('  ________                  .___    _____                      .__              ._.');
+  console.log(' /  _____/  ____   ____   __| _/   /     \\   ___________  ____ |__| ____    ____| |');
+  console.log('/   \\  ___ /  _ \\ /  _ \\ / __ |   /  \\ /  \\ /  _ \\_  __ \\/    \\|  |/    \\  / ___\\ |');
+  console.log('\\    \\_\\  (  <_> |  <_> ) /_/ |  /    Y    (  <_> )  | \\/   |  \\  |   |  \\/ /_/  >|');
+  console.log(' \\______  /\\____/ \\____/\\____ |  \\____|__  /\\____/|__|  |___|  /__|___|  /\\___  /__');
+  console.log('        \\/                   \\/          \\/                  \\/        \\//_____/ \\/');
+});
+
+gulp.task('goodnight_gitpush', () => {
+  return gulp.src('.')
+    .pipe(through.obj((chunk, enc, cb) => {
+      git.revParse({
+        args: '--abbrev-ref HEAD'
+      }, (err, branch) => {
+        git.push('origin', branch, () => {
+          cb(null, chunk);
+        });
+      });
+    }));
+});
+
+gulp.task('goodnight', ['goodnight_gitpush'], () => {
+  console.log('  ________                  .___  _______  .__       .__     __  ._.');
+  console.log(' /  _____/  ____   ____   __| _/  \\      \\ |__| ____ |  |___/  |_| |');
+  console.log('/   \\  ___ /  _ \\ /  _ \\ / __ |   /   |   \\|  |/ ___\\|  |  \\   __\\ |');
+  console.log('\\    \\_\\  (  <_> |  <_> ) /_/ |  /    |    \\  / /_/  >   Y  \\  |  \\|');
+  console.log(' \\______  /\\____/ \\____/\\____ |  \\____|__  /__\\___  /|___|  /__|  __');
+  console.log('        \\/                   \\/          \\/  /_____/      \\/      \\/');
 });

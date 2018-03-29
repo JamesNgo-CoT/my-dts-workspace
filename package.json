@@ -29,11 +29,13 @@
     "gulp-cli": "^2.0.1",
     "gulp-cssnano": "^2.1.2",
     "gulp-eslint": "^4.0.2",
+    "gulp-git": "^2.5.2",
     "gulp-mustache": "^3.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.0",
+    "gulp-web-dependencies": "^1.1.2",
     "gulp-webserver": "^0.9.1"
   },
   "dependencies": {
