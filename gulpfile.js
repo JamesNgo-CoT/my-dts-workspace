@@ -80,7 +80,7 @@ const buildHtml = () => gulp.src(htmlGlob)
   .pipe(mustache())
   .pipe(dependencies({
     dest: './dist/',
-    prefix: '/vendor',
+    prefix: '/vendors',
   }))
   .pipe(gulp.dest('./dist/'));
 
